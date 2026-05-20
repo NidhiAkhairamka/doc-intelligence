@@ -1,0 +1,42 @@
+services:
+  api:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - chroma_data:/app/chroma_store
+      - db_data:/app/data
+      - mlflow_data:/app/mlruns
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  streamlit:
+    build: .
+    ports:
+      - "8501:8501"
+    volumes:
+      - chroma_data:/app/chroma_store
+      - db_data:/app/data
+    env_file:
+      - .env
+    command: streamlit run streamlit_app.py --server.port=8501 --server.address=0.0.0.0
+    depends_on:
+      - api
+    environment:
+      - API_BASE=http://api:5000
+    restart: unless-stopped
+
+  mlflow:
+    build: .
+    ports:
+      - "5001:5001"
+    volumes:
+      - mlflow_data:/app/mlruns
+    command: mlflow ui --host 0.0.0.0 --port 5001 --backend-store-uri /app/mlruns
+    restart: unless-stopped
+
+volumes:
+  chroma_data:
+  db_data:
+  mlflow_data:

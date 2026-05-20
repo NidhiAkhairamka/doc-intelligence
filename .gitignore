@@ -1,0 +1,66 @@
+# ── Secrets ──────────────────────────────────────────────────────────────────
+.env
+.env.*
+*.pem
+*.key
+secrets/
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+.env/
+ENV/
+
+# ── Data & model artefacts (too large for git) ────────────────────────────────
+chroma_store/
+data/
+*.db
+*.sqlite
+*.sqlite3
+mlruns/
+*.ics
+
+# ── Hugging Face model cache (sentence-transformers downloads here) ───────────
+.cache/
+models/
+sentence_transformers/
+
+# ── Uploads / temp files ──────────────────────────────────────────────────────
+uploads/
+tmp/
+*.tmp
+test_docs/*.pdf
+test_docs/*.docx
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Test artefacts ────────────────────────────────────────────────────────────
+.pytest_cache/
+htmlcov/
+.coverage
