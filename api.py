@@ -138,7 +138,7 @@ def admin_list_dept_documents(dept_id):
 # Department routes — scoped to the caller's department via X-API-Key
 # ---------------------------------------------------------------------------
 
-ALLOWED_EXTENSIONS = {".pdf", ".docx", ".txt"}
+ALLOWED_EXTENSIONS = {".pdf", ".docx", ".txt", ".pptx"}
 
 
 @app.route("/ingest", methods=["POST"])
@@ -345,5 +345,8 @@ def export_calendar():
 
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
     # use_reloader=False stops Flask watching site-packages (transformers triggers endless restarts)
-    app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
+    # debug=False in production
+    debug = os.environ.get("FLASK_ENV") == "development"
+    app.run(host="0.0.0.0", port=port, debug=debug, use_reloader=False)

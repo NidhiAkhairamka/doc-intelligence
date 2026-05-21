@@ -148,7 +148,7 @@ if st.session_state.admin_verified:
                         for f in files:
                             fname = f["filename"]
                             ext   = fname.rsplit(".", 1)[-1].lower() if "." in fname else ""
-                            ficon = {"pdf": "📕", "docx": "📘", "txt": "📄"}.get(ext, "📄")
+                            ficon = {"pdf": "📕", "docx": "📘", "txt": "📄", "pptx": "📊"}.get(ext, "📄")
                             fc1, fc2, fc3 = st.columns([5, 2, 2])
                             fc1.markdown(f"{ficon} **{fname}**")
                             fc2.caption(str(f.get("total_chunks", "?")))
@@ -201,30 +201,21 @@ elif st.session_state.api_key:
             for msg in st.session_state.messages:
                 with st.chat_message(msg["role"]):
                     st.markdown(msg["content"])
+                    # Only show sources — contradictions & actions live in their own tabs
                     if msg["role"] == "assistant" and msg.get("meta"):
-                        meta = msg["meta"]
-                        if meta.get("sources"):
-                            with st.expander(f"📄 Sources ({len(meta['sources'])})"):
-                                for s in meta["sources"]:
+                        sources = msg["meta"].get("sources", [])
+                        if sources:
+                            with st.expander(f"📄 {len(sources)} source(s)"):
+                                for s in sources:
                                     st.caption(f"→ {s['citation']}")
-                        if meta.get("contradictions"):
-                            with st.expander(f"⚠️ Contradictions ({len(meta['contradictions'])})", expanded=True):
-                                for c in meta["contradictions"]:
-                                    icon = severity_icon(c["severity"])
-                                    st.markdown(f"**{icon} {c['severity']} — {c['summary']}**")
-                                    c1, c2 = st.columns(2)
-                                    with c1:
-                                        st.error(f"**{c['source_a']}**\n\n{c['quote_a']}")
-                                    with c2:
-                                        st.success(f"**{c['source_b']}**\n\n{c['quote_b']}")
-                                    st.info(f"🔧 **Action required:** {c['action_required']}")
-                                    st.divider()
-                        if meta.get("related_actions"):
-                            with st.expander(f"📋 Related actions ({len(meta['related_actions'])})"):
-                                for a in meta["related_actions"]:
-                                    icon = priority_icon(a["priority"])
-                                    deadline = f" · Due: {a['deadline']}" if a.get("deadline") else ""
-                                    st.markdown(f"{icon} {a['task']}{deadline}")
+                        # Subtle hint if related data exists in other tabs
+                        hints = []
+                        if msg["meta"].get("contradictions"):
+                            hints.append(f"⚠️ {len(msg['meta']['contradictions'])} contradiction(s) found")
+                        if msg["meta"].get("related_actions"):
+                            hints.append(f"📋 {len(msg['meta']['related_actions'])} related action(s)")
+                        if hints:
+                            st.caption("  ·  ".join(hints) + " — see tabs above")
 
             if prompt := st.chat_input("Ask anything about your documents..."):
                 st.session_state.messages.append({"role": "user", "content": prompt})
@@ -243,28 +234,20 @@ elif st.session_state.api_key:
                         answer = data["answer"]
                         st.markdown(answer)
 
+                        # Sources only — clean and focused
                         if data.get("sources"):
-                            with st.expander(f"📄 Sources ({len(data['sources'])})"):
+                            with st.expander(f"📄 {len(data['sources'])} source(s)"):
                                 for s in data["sources"]:
                                     st.caption(f"→ {s['citation']}")
+
+                        # Subtle hints pointing to other tabs — no data dump
+                        hints = []
                         if data.get("contradictions"):
-                            with st.expander(f"⚠️ Contradictions ({len(data['contradictions'])})", expanded=True):
-                                for c in data["contradictions"]:
-                                    icon = severity_icon(c["severity"])
-                                    st.markdown(f"**{icon} {c['severity']} — {c['summary']}**")
-                                    c1, c2 = st.columns(2)
-                                    with c1:
-                                        st.error(f"**{c['source_a']}**\n\n{c['quote_a']}")
-                                    with c2:
-                                        st.success(f"**{c['source_b']}**\n\n{c['quote_b']}")
-                                    st.info(f"🔧 **Action required:** {c['action_required']}")
-                                    st.divider()
+                            hints.append(f"⚠️ {len(data['contradictions'])} contradiction(s) found")
                         if data.get("related_actions"):
-                            with st.expander(f"📋 Related actions ({len(data['related_actions'])})"):
-                                for a in data["related_actions"]:
-                                    icon = priority_icon(a["priority"])
-                                    deadline = f" · Due: {a['deadline']}" if a.get("deadline") else ""
-                                    st.markdown(f"{icon} {a['task']}{deadline}")
+                            hints.append(f"📋 {len(data['related_actions'])} related action(s)")
+                        if hints:
+                            st.caption("  ·  ".join(hints) + " — see tabs above")
 
                         st.session_state.messages.append({
                             "role": "assistant",
@@ -277,11 +260,11 @@ elif st.session_state.api_key:
     # ── Upload ───────────────────────────────────────────────────────────────
     with tab_upload:
         st.header("Upload documents")
-        st.caption("PDF, Word (.docx), plain text (.txt) · Max 20 MB per file")
+        st.caption("PDF, Word (.docx), PowerPoint (.pptx), plain text (.txt) · Max 20 MB per file")
 
         uploaded = st.file_uploader(
             "Drop files here",
-            type=["pdf", "docx", "txt"],
+            type=["pdf", "docx", "txt", "pptx"],
             accept_multiple_files=True,
         )
         if uploaded:
@@ -324,7 +307,7 @@ elif st.session_state.api_key:
                 for doc in docs:
                     fname = doc["filename"]
                     ext   = fname.rsplit(".", 1)[-1].lower() if "." in fname else ""
-                    icon  = {"pdf": "📕", "docx": "📘", "txt": "📄"}.get(ext, "📄")
+                    icon  = {"pdf": "📕", "docx": "📘", "txt": "📄", "pptx": "📊"}.get(ext, "📄")
                     c1, c2, c3 = st.columns([5, 2, 2])
                     c1.markdown(f"{icon} **{fname}**")
                     c2.caption(str(doc.get("total_chunks", "?")))
