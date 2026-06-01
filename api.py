@@ -390,7 +390,7 @@ def export_calendar():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 8080))
     # use_reloader=False stops Flask watching site-packages (transformers triggers endless restarts)
     # debug=False in production
     debug = os.environ.get("FLASK_ENV") == "development"

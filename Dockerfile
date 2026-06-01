@@ -18,4 +18,4 @@ RUN mkdir -p /app/chroma_store /app/data /app/mlruns
 # Railway sets PORT=8080 at runtime — expose that port
 EXPOSE 8080
 
-CMD gunicorn --workers 1 --bind 0.0.0.0:${PORT:-8080} --timeout 120 api:app
+CMD gunicorn --workers 1 --bind 0.0.0.0:8080 --timeout 120 api:app
