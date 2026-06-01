@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system deps for PyMuPDF and sentence-transformers
+# System deps for PyMuPDF and sentence-transformers
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc g++ && \
     rm -rf /var/lib/apt/lists/*
@@ -12,9 +12,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Create data dirs so volumes mount cleanly
+# Pre-download the embedding model so it's baked into the image.
+# Without this, Railway downloads ~90MB at startup and times out (502).
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-small-en-v1.5')"
+
+# Create data dirs
 RUN mkdir -p /app/chroma_store /app/data /app/mlruns
 
-EXPOSE 5000
+# Railway injects PORT at runtime — expose it
+EXPOSE ${PORT:-5000}
 
 CMD ["python", "api.py"]
