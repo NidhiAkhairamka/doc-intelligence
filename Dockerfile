@@ -12,10 +12,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Pre-download the embedding model so it's baked into the image.
-# Without this, Railway downloads ~90MB at startup and times out (502).
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-small-en-v1.5')"
-
 # Create data dirs
 RUN mkdir -p /app/chroma_store /app/data /app/mlruns
 
