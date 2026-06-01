@@ -25,4 +25,4 @@ DB_PATH = os.environ.get("DB_PATH", "./doc_intelligence.db")
 # Observability
 LANGCHAIN_API_KEY = os.environ.get("LANGCHAIN_API_KEY", "")
 LANGCHAIN_PROJECT = os.environ.get("LANGCHAIN_PROJECT", "doc-intelligence")
-MLFLOW_TRACKING_URI = os.environ.get("MLFLOW_TRACKING_URI", "./mlruns")
+MLFLOW_TRACKING_URI = os.environ.get("MLFLOW_TRACKING_URI", "sqlite:///mlflow.db")
