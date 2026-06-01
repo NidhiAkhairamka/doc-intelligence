@@ -1,57 +1,19 @@
 import os
-import sys
 import time
 import traceback
 import tempfile
 from functools import wraps
 from pathlib import Path
 
-print("[STARTUP] Python imports starting...", flush=True)
+import mlflow
+from flask import Flask, request, jsonify, g, Response
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
-try:
-    import mlflow
-    print("[STARTUP] mlflow OK", flush=True)
-except Exception as e:
-    print(f"[STARTUP] mlflow import FAILED: {e}", flush=True)
-    mlflow = None
-
-try:
-    from flask import Flask, request, jsonify, g, Response
-    from flask_limiter import Limiter
-    from flask_limiter.util import get_remote_address
-    print("[STARTUP] flask OK", flush=True)
-except Exception as e:
-    print(f"[STARTUP] flask import FAILED: {e}", flush=True)
-    sys.exit(1)
-
-try:
-    import config
-    print(f"[STARTUP] config OK — ADMIN_API_KEY set: {bool(config.ADMIN_API_KEY)}", flush=True)
-except Exception as e:
-    print(f"[STARTUP] config FAILED: {e}", flush=True)
-    sys.exit(1)
-
-try:
-    from core.store import StoreManager
-    print("[STARTUP] core.store OK", flush=True)
-except Exception as e:
-    print(f"[STARTUP] core.store FAILED: {e}", flush=True)
-    sys.exit(1)
-
-try:
-    from core import db
-    print("[STARTUP] core.db OK", flush=True)
-except Exception as e:
-    print(f"[STARTUP] core.db FAILED: {e}", flush=True)
-    sys.exit(1)
-
-try:
-    from agents import ingestion_agent, qa_agent, calendar_agent, contradiction_agent, orchestrator
-    print("[STARTUP] all agents OK", flush=True)
-except Exception as e:
-    print(f"[STARTUP] agents import FAILED: {e}", flush=True)
-    traceback.print_exc()
-    sys.exit(1)
+from core.store import StoreManager
+from core import db
+from agents import ingestion_agent, qa_agent, calendar_agent, contradiction_agent, orchestrator
+import config
 
 # Configure MLflow — wrapped so a tracking-backend error never crashes the API
 try:
