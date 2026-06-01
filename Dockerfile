@@ -15,7 +15,7 @@ COPY . .
 # Create data dirs
 RUN mkdir -p /app/chroma_store /app/data /app/mlruns
 
-# Railway injects PORT at runtime — expose it
-EXPOSE ${PORT:-5000}
+# Railway sets PORT=8080 at runtime — expose that port
+EXPOSE 8080
 
 CMD ["python", "api.py"]
