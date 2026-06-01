@@ -15,9 +15,13 @@ from core import db
 from agents import ingestion_agent, qa_agent, calendar_agent, contradiction_agent, orchestrator
 import config
 
-# Configure MLflow
-mlflow.set_tracking_uri(config.MLFLOW_TRACKING_URI)
-mlflow.set_experiment("doc-intelligence-queries")
+# Configure MLflow — wrapped so a tracking-backend error never crashes the API
+try:
+    mlflow.set_tracking_uri(config.MLFLOW_TRACKING_URI)
+    mlflow.set_experiment("doc-intelligence-queries")
+except Exception as _mlflow_err:
+    print(f"[WARNING] MLflow init failed (observability disabled): {_mlflow_err}")
+    mlflow = None  # type: ignore
 
 app = Flask(__name__)
 
@@ -168,12 +172,13 @@ def ingest():
         elapsed = round(time.time() - t0, 3)
         result["department"] = dept["name"]
         try:
-            with mlflow.start_run():
-                mlflow.log_param("event", "ingest")
-                mlflow.log_param("department", dept["name"])
-                mlflow.log_param("filename", original_filename)
-                mlflow.log_metric("chunks_created", result.get("chunks_created", 0))
-                mlflow.log_metric("ingest_time_sec", elapsed)
+            if mlflow:
+                with mlflow.start_run():
+                    mlflow.log_param("event", "ingest")
+                    mlflow.log_param("department", dept["name"])
+                    mlflow.log_param("filename", original_filename)
+                    mlflow.log_metric("chunks_created", result.get("chunks_created", 0))
+                    mlflow.log_metric("ingest_time_sec", elapsed)
         except Exception:
             pass
     except Exception as e:
@@ -207,6 +212,8 @@ def ask():
 
     # MLflow — log every query as a run for cost + performance tracking
     try:
+        if not mlflow:
+            raise RuntimeError("MLflow disabled")
         with mlflow.start_run():
             mlflow.log_param("department", dept["name"])
             mlflow.log_param("question", query[:200])
