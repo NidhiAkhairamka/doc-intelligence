@@ -12,8 +12,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Create data dirs
-RUN mkdir -p /app/chroma_store /app/data /app/mlruns
+# /data is where the Railway Volume is mounted — create subdirs as fallback
+RUN mkdir -p /data/chroma_store /data/db /data/mlruns
 
 # Railway sets PORT=8080 at runtime — expose that port
 EXPOSE 8080

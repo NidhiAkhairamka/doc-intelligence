@@ -20,6 +20,7 @@ CLAUDE_FAST_MODEL = os.environ.get("CLAUDE_FAST_MODEL", "claude-haiku-4-5")
 EMBED_MODEL = os.environ.get("EMBED_MODEL", "BAAI/bge-small-en-v1.5")
 
 ADMIN_API_KEY = os.environ["ADMIN_API_KEY"]
+DEMO_API_KEY  = os.environ.get("DEMO_API_KEY", "demo-doc-intelligence")
 DB_PATH = os.environ.get("DB_PATH", "./doc_intelligence.db")
 
 # Observability

@@ -33,6 +33,7 @@ limiter = Limiter(
     storage_uri="memory://",
 )
 db.init_db()
+db.seed_demo_department(config.DEMO_API_KEY)   # always exists, survives restarts
 
 store_manager = StoreManager()
 sessions: dict = {}  # session_id -> list of message dicts

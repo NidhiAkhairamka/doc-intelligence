@@ -3,7 +3,8 @@ import requests
 import streamlit as st
 
 import os
-API_BASE = os.environ.get("API_BASE", "http://localhost:5000")
+API_BASE  = os.environ.get("API_BASE", "http://localhost:5000")
+DEMO_KEY  = os.environ.get("DEMO_API_KEY", "demo-doc-intelligence")
 
 st.set_page_config(
     page_title="Doc Intelligence",
@@ -448,6 +449,40 @@ elif st.session_state.api_key:
 else:
     st.markdown("<h1 style='text-align:center'>🧠 Doc Intelligence</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align:center;color:gray'>Enterprise document Q&A with AI agents</p>", unsafe_allow_html=True)
+    st.divider()
+
+    # ── Demo banner ────────────────────────────────────────────────────
+    with st.container(border=True):
+        dc1, dc2 = st.columns([5, 2])
+        with dc1:
+            st.markdown("#### 🎮 Try the live demo")
+            st.markdown(
+                "A **Demo** department is pre-loaded. Click the button to log in instantly — "
+                "no key needed. Upload any PDF, DOCX, PPTX or TXT and start asking questions."
+            )
+            st.code(f"Demo API key: {DEMO_KEY}", language=None)
+        with dc2:
+            st.write("")
+            st.write("")
+            if st.button("▶ Enter Demo", type="primary", use_container_width=True):
+                try:
+                    r = requests.get(
+                        f"{API_BASE}/documents",
+                        headers={"X-API-Key": DEMO_KEY},
+                        timeout=10,
+                    )
+                    if r.status_code == 200:
+                        st.session_state.api_key = DEMO_KEY
+                        st.session_state.dept_name = "Demo"
+                        st.session_state.documents = r.json()
+                        st.session_state.messages = []
+                        st.session_state.session_id = str(uuid.uuid4())
+                        st.rerun()
+                    else:
+                        st.error("Demo unavailable — API not reachable.")
+                except Exception:
+                    st.error("❌ Cannot reach the API.")
+
     st.divider()
 
     # Two login cards side by side — credentials at the TOP

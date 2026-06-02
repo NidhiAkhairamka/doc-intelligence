@@ -62,6 +62,31 @@ def init_db():
 # Departments
 # ---------------------------------------------------------------------------
 
+def seed_demo_department(demo_key: str) -> dict:
+    """
+    Ensure a 'Demo' department with a fixed API key exists.
+    Called at every startup so the demo dept survives container restarts.
+    """
+    with _conn() as conn:
+        row = conn.execute(
+            "SELECT id, name, api_key, created_at FROM departments WHERE name = 'Demo'"
+        ).fetchone()
+        if row:
+            # Update key if it changed (e.g. env var was changed)
+            conn.execute(
+                "UPDATE departments SET api_key = ? WHERE name = 'Demo'",
+                (demo_key,),
+            )
+            return _dept_row(row)
+        dept_id = str(uuid.uuid4())
+        created_at = datetime.utcnow().isoformat()
+        conn.execute(
+            "INSERT INTO departments (id, name, api_key, created_at) VALUES (?, 'Demo', ?, ?)",
+            (dept_id, demo_key, created_at),
+        )
+        return {"id": dept_id, "name": "Demo", "api_key": demo_key, "created_at": created_at}
+
+
 def create_department(name: str) -> dict:
     dept_id = str(uuid.uuid4())
     api_key = str(uuid.uuid4())
